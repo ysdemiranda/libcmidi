@@ -37,19 +37,17 @@
 extern "C" {
 #endif
     
-    typedef uint8_t MIDI_Status_t;
-    
     typedef struct {
-        MIDI_Status_t status;
+        uint8_t status;
         uint8_t data0;
         uint8_t data1;
     } MIDI_Message_t;
     
     typedef enum {
-        MS_Status,
-        MS_Data0,
-        MS_Data1,
-        MS_Full
+        MIDIState_Status,
+        MIDIState_Data0,
+        MIDIState_Data1,
+        MIDIState_Full
     } MIDI_State_t;
     
     typedef struct {
@@ -59,22 +57,17 @@ extern "C" {
     } MIDI_t;
 
     typedef enum {
-        MT_NoStatus,
-        MT_ChannelVoice,
-        MT_SystemCommon,
-        MT_SystemRealTime
+        MIDIStatusType_NoStatus,
+        MIDIStatusType_ChannelVoice,
+        MIDIStatusType_SystemCommon,
+        MIDIStatusType_SystemRealTime
     } MIDI_StatusType_t;
     
     // Macro's
-    inline bool MIDI_IsStatus(uint8_t data);
-    inline MIDI_StatusType_t MIDI_GetStatusType(MIDI_Status_t status);
-    inline uint8_t MIDI_GetMessageLength(MIDI_Status_t status);
-    inline void MIDI_ClearObject(MIDI_t* midi);
-    void MIDI_SetStatusISR(MIDI_Status_t status, void (* isr)( MIDI_t* midi ));
+    void MIDI_SetStatusHandler(uint8_t status, void (* isr)( MIDI_t* midi ));
 
     // ISRs and Tasks
     void MIDI_Task( uint8_t data, MIDI_t* midi );
-    void MIDI_ISR(MIDI_t* midi);
     
 #ifdef	__cplusplus
 }

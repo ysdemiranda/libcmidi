@@ -1,14 +1,10 @@
 #include "midi.h"
 
-    // MIDI Masks
-static const uint8_t MIDI_StatusMask =              0b10000000;
-static const uint8_t MIDI_DataMask =                0b01111111;
-static const uint8_t MIDI_MessageMask =             0b11110000;
-static const uint8_t MIDI_CV_ChannelMask =          0b00001111;
-
-static volatile uint8_t rxBuf = 0;
-static volatile uint8_t expect = 0;
-static volatile MIDI_t* midiPtr;
+// MIDI Masks
+const uint8_t MIDI_StatusMask =              0b10000000;
+const uint8_t MIDI_DataMask =                0b01111111;
+const uint8_t MIDI_MessageMask =             0b11110000;
+const uint8_t MIDI_CV_ChannelMask =          0b00001111;
 
 // Channel Voice Messages
 static void (*MIDI_NoteOffISR)( MIDI_t* midi );
@@ -39,43 +35,16 @@ static void (*MIDI_Undefined_3ISR)( MIDI_t* midi );
 static void (*MIDI_ActiveISR)( MIDI_t* midi );
 static void (*MIDI_ResetISR)( MIDI_t* midi );
 
-static inline void StartMidiMessage() {
-    midiPtr->message.status = rxBuf;
-    midiPtr->message.data0 = 0;
-    midiPtr->message.data1 = 0;
-    expect = MIDI_GetMessageLength(rxBuf);
-    if(expect) midiPtr->state = MS_Data0;
-    else midiPtr->state = MS_Full;
-}
+static volatile uint8_t rxBuf = 0;
+static volatile uint8_t expect = 0;
+static volatile MIDI_t* midiPtr;
 
-inline bool MIDI_IsStatus(uint8_t data) {
-    return (bool)(data & MIDI_StatusMask);
-}
-
-inline MIDI_StatusType_t MIDI_GetStatusType(MIDI_Status_t status) {
-    if((status & MIDI_MessageMask) < MIDI_SC_SYSEX)
-        status &= MIDI_MessageMask;
-    
-    if(status < MIDI_CV_NOTE_OFF) {
-        return MT_NoStatus;
-    }
-    else if(status < MIDI_SC_SYSEX) {
-        return MT_ChannelVoice;
-    }
-    else if(status < MIDI_RT_TIMING_CLOCK) {
-        return MT_SystemCommon;
-    }
-    else {
-        return MT_SystemRealTime;
-    }
-}
-
-inline uint8_t MIDI_GetMessageLength(MIDI_Status_t status) {
+static uint8_t MIDI_GetMessageLength(uint8_t status) {
     status &= MIDI_MessageMask;
     if(status < MIDI_CV_NOTE_OFF) {
         return 0;
     }
-    
+
     switch(status) {
         case MIDI_CV_NOTE_OFF:
         case MIDI_CV_NOTE_ON:
@@ -100,145 +69,51 @@ inline uint8_t MIDI_GetMessageLength(MIDI_Status_t status) {
     }
 }
 
-inline void MIDI_ClearObject(MIDI_t* midi) {
+static bool MIDI_IsStatus(uint8_t data) {
+    return (bool)(data & MIDI_StatusMask);
+}
+
+static MIDI_StatusType_t MIDI_GetStatusType(uint8_t status) {
+    if((status & MIDI_MessageMask) < MIDI_SC_SYSEX)
+        status &= MIDI_MessageMask;
+    
+    if(status < MIDI_CV_NOTE_OFF) {
+        return MIDIStatusType_NoStatus;
+    }
+    else if(status < MIDI_SC_SYSEX) {
+        return MIDIStatusType_ChannelVoice;
+    }
+    else if(status < MIDI_RT_TIMING_CLOCK) {
+        return MIDIStatusType_SystemCommon;
+    }
+    else {
+        return MIDIStatusType_SystemRealTime;
+    }
+}
+
+static void MIDI_ClearObject(MIDI_t* midi) {
     // Do not clear the Status byte as it
-    // might be required for a continuation event.
+    // might be required for a continued event.
     midi->message.data0 = 0;
     midi->message.data1 = 0;
-    midi->state = MS_Status;
+    midi->state = MIDIState_Status;
 }
 
-void MIDI_SetStatusISR(MIDI_Status_t status, void (* isr)( MIDI_t* midi )) {
-    switch(status) {
-        case MIDI_CV_NOTE_OFF:
-            MIDI_NoteOffISR = isr;
-            break;
-        case MIDI_CV_NOTE_ON:
-            MIDI_NoteOnISR = isr;
-            break;
-        case MIDI_CV_KEY_PRESSURE:
-            MIDI_KeyPressureISR = isr;
-            break;
-        case MIDI_CV_CONTROL_CHANGE:
-            MIDI_ControlChangeISR = isr;
-            break;
-        case MIDI_CV_PROGRAM_CHANGE:
-            MIDI_ProgramChangeISR = isr;
-            break;
-        case MIDI_CV_CHANNEL_PRESSURE:
-            MIDI_ChannelPressureISR = isr;
-            break;
-        case MIDI_CV_PITCH_BEND:
-            MIDI_PitchBendISR = isr;
-            break;
-        case MIDI_SC_SYSEX:
-            MIDI_SysExISR = isr;
-            break;
-        case MIDI_SC_TCQF:
-            MIDI_TC_QFrameISR = isr;
-            break;
-        case MIDI_SC_SONG_POSITION:
-            MIDI_SongPositionISR = isr;
-            break;
-        case MIDI_SC_SONG_SELECT:
-            MIDI_SongSelectISR = isr;
-            break;
-        case MIDI_SC_UNDEFINED_0:
-            MIDI_Undefined_0ISR = isr;
-            break;
-        case MIDI_SC_UNDEFINED_1:
-            MIDI_Undefined_1ISR = isr;
-            break;
-        case MIDI_SC_TUNE_REQUEST:
-            MIDI_TuneRequestISR = isr;
-            break;
-        case MIDI_SC_SYSEX_END:
-            MIDI_EndSysExISR = isr;
-            break;
-        case MIDI_RT_TIMING_CLOCK:
-            MIDI_TimingClockISR = isr;
-            break;
-        case MIDI_RT_UNDEFINED_2:
-            MIDI_Undefined_2ISR = isr;
-            break;
-        case MIDI_RT_START:
-            MIDI_StartISR = isr;
-            break;
-        case MIDI_RT_CONTINUE:
-            MIDI_ContinueISR = isr;
-            break;
-        case MIDI_RT_STOP:
-            MIDI_StopISR = isr;
-            break;
-        case MIDI_RT_UNDEFINED_3:
-            MIDI_Undefined_3ISR = isr;
-            break;
-        case MIDI_RT_ACTIVE:
-            MIDI_ActiveISR = isr;
-            break;
-        case MIDI_RT_RESET:
-            MIDI_ResetISR = isr;
-            break;
-        default:
-            break;
-    }
+static void StartMidiMessage() {
+    midiPtr->message.status = rxBuf;
+    midiPtr->message.data0 = 0;
+    midiPtr->message.data1 = 0;
+    expect = MIDI_GetMessageLength(rxBuf);
+    if(expect) midiPtr->state = MIDIState_Data0;
+    else midiPtr->state = MIDIState_Full;
 }
 
-void MIDI_Task( uint8_t data, MIDI_t* midi) {
-    rxBuf = data;
-    midiPtr = midi;
-    switch(midi->state) {
-        case MS_Status:
-            if(MIDI_IsStatus(rxBuf)) {
-                StartMidiMessage();
-            }
-            else {
-                // Continuation
-                midi->message.data0 = rxBuf;
-                expect = MIDI_GetMessageLength(midi->message.status) - 1;
-                if(expect) midi->state = MS_Data1;
-                else midi->state = MS_Full;
-            }
-            break;
-        case MS_Data0:
-            if(MIDI_IsStatus(rxBuf)) {
-                // Missed bytes, oh well
-                StartMidiMessage();
-            }
-            else {
-                midi->message.data0 = rxBuf;
-                expect--;
-                if(expect) midi->state = MS_Data1;
-                else midi->state = MS_Full;
-            }
-            break;
-        case MS_Data1:
-            if(MIDI_IsStatus(rxBuf)) {
-                // Missed bytes, oh well
-                StartMidiMessage();
-            }
-            else {
-                midi->message.data1 = rxBuf;
-                expect = 0;
-                midi->state = MS_Full;
-            }
-            break;
-        default:
-            // Here be data loss
-            break;
-    }
-    
-    if(midi->state == MS_Full) {
-        MIDI_ISR(midi);
-    }
-}
-
-void MIDI_ISR(MIDI_t* midi) {
+static void MIDI_ISR(MIDI_t* midi) {
     //ISR was called too early
-    if(midi->state != MS_Full)
+    if(midi->state != MIDIState_Full)
         return;
     
-    if(MIDI_GetStatusType(midi->message.status) == MT_ChannelVoice) {
+    if(MIDI_GetStatusType(midi->message.status) == MIDIStatusType_ChannelVoice) {
         if((midi->message.status & MIDI_CV_ChannelMask) != midi->channel) {
             // This message is not for me
             MIDI_ClearObject(midi);
@@ -371,4 +246,129 @@ void MIDI_ISR(MIDI_t* midi) {
     }
     
     MIDI_ClearObject(midi);
+}
+
+void MIDI_SetStatusHandler(uint8_t status, void (* isr)( MIDI_t* midi )) {
+    switch(status) {
+        case MIDI_CV_NOTE_OFF:
+            MIDI_NoteOffISR = isr;
+            break;
+        case MIDI_CV_NOTE_ON:
+            MIDI_NoteOnISR = isr;
+            break;
+        case MIDI_CV_KEY_PRESSURE:
+            MIDI_KeyPressureISR = isr;
+            break;
+        case MIDI_CV_CONTROL_CHANGE:
+            MIDI_ControlChangeISR = isr;
+            break;
+        case MIDI_CV_PROGRAM_CHANGE:
+            MIDI_ProgramChangeISR = isr;
+            break;
+        case MIDI_CV_CHANNEL_PRESSURE:
+            MIDI_ChannelPressureISR = isr;
+            break;
+        case MIDI_CV_PITCH_BEND:
+            MIDI_PitchBendISR = isr;
+            break;
+        case MIDI_SC_SYSEX:
+            MIDI_SysExISR = isr;
+            break;
+        case MIDI_SC_TCQF:
+            MIDI_TC_QFrameISR = isr;
+            break;
+        case MIDI_SC_SONG_POSITION:
+            MIDI_SongPositionISR = isr;
+            break;
+        case MIDI_SC_SONG_SELECT:
+            MIDI_SongSelectISR = isr;
+            break;
+        case MIDI_SC_UNDEFINED_0:
+            MIDI_Undefined_0ISR = isr;
+            break;
+        case MIDI_SC_UNDEFINED_1:
+            MIDI_Undefined_1ISR = isr;
+            break;
+        case MIDI_SC_TUNE_REQUEST:
+            MIDI_TuneRequestISR = isr;
+            break;
+        case MIDI_SC_SYSEX_END:
+            MIDI_EndSysExISR = isr;
+            break;
+        case MIDI_RT_TIMING_CLOCK:
+            MIDI_TimingClockISR = isr;
+            break;
+        case MIDI_RT_UNDEFINED_2:
+            MIDI_Undefined_2ISR = isr;
+            break;
+        case MIDI_RT_START:
+            MIDI_StartISR = isr;
+            break;
+        case MIDI_RT_CONTINUE:
+            MIDI_ContinueISR = isr;
+            break;
+        case MIDI_RT_STOP:
+            MIDI_StopISR = isr;
+            break;
+        case MIDI_RT_UNDEFINED_3:
+            MIDI_Undefined_3ISR = isr;
+            break;
+        case MIDI_RT_ACTIVE:
+            MIDI_ActiveISR = isr;
+            break;
+        case MIDI_RT_RESET:
+            MIDI_ResetISR = isr;
+            break;
+        default:
+            break;
+    }
+}
+
+void MIDI_Task( uint8_t data, MIDI_t* midi) {
+    rxBuf = data;
+    midiPtr = midi;
+    switch(midi->state) {
+        case MIDIState_Status:
+            if(MIDI_IsStatus(rxBuf)) {
+                StartMidiMessage();
+            }
+            else {
+                // Continuation
+                midi->message.data0 = rxBuf;
+                expect = MIDI_GetMessageLength(midi->message.status) - 1;
+                if(expect) midi->state = MIDIState_Data1;
+                else midi->state = MIDIState_Full;
+            }
+            break;
+        case MIDIState_Data0:
+            if(MIDI_IsStatus(rxBuf)) {
+                // Missed bytes, oh well
+                StartMidiMessage();
+            }
+            else {
+                midi->message.data0 = rxBuf;
+                expect--;
+                if(expect) midi->state = MIDIState_Data1;
+                else midi->state = MIDIState_Full;
+            }
+            break;
+        case MIDIState_Data1:
+            if(MIDI_IsStatus(rxBuf)) {
+                // Missed bytes, oh well
+                StartMidiMessage();
+            }
+            else {
+                midi->message.data1 = rxBuf;
+                expect = 0;
+                midi->state = MIDIState_Full;
+            }
+            break;
+        default:
+            // Here be data loss
+            break;
+    }
+
+    if(midi->state == MIDIState_Full) {
+        MIDI_ISR(midi);
+    }
 }

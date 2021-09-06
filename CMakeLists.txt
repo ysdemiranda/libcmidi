@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.21)
+cmake_minimum_required(VERSION 3.21)
 
-project (libcmidi)
+project(cmidi)
 
-add_library(libcmidi midi.c)
+add_library(cmidi midi.c)
