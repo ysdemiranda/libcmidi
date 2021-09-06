@@ -3,19 +3,8 @@
 libcmidi is a MIDI event handling library for C. It is intended to
 
 * be as compiler-agnostic as possible
-* adhere to the MIDI 1.1 standard as much as possible
-* small in size and easy to implement
-
-## Quick usage reference
-
-1. Create a MIDI data container: +
-`MIDI_t midi_in = { MIDIState_Status, { 0, 0, 0 } };`
-1. Bind a MIDI event to your handler, which must be outlined as `void YourFunctionName( MIDI_t* midi )`: +
-`MIDI_SetStatusHandler( MIDI_CV_NOTE_ON, YourFunctionName );`
-1. Every time you receive a _single_ byte on the MIDI interface, pass it through the `MIDI_Task(...)` function: +
-`MIDI_Task( rxData, &midi );`
-
-When a complete MIDI message is received, `libcmidi` will pick out the right function handler for you, as long as it has been defined and bound to a MIDI message. See the MIDI specification and `cmidi.h` to see which MIDI events are available.
+* adhere to the entire MIDI 1.0 standard as much as possible
+* be small in size and easy to use
 
 ### Quick usage example
 
@@ -24,30 +13,39 @@ Below is a quick usage example that
 * Creates a MIDI event container called `midi_in`
 * Declares/Defines an event handler called `void NoteOnTest(...)`
 * Binds the event handler to a MIDI event code
+* Sets the container's channel to 6
 * Simulates a Note On event to trigger the event handler
 
+[source,c]
 ----
-#include "midi.h"
 #include <stdio.h>
+#include "cmidi.h"
 
 // Create the container
-MIDI_t midi_in = { MIDIState_Status, { 0, 0, 0 } };
-
+MIDI_t midi_in;
 
 // Define/Declare the event handler
 void NoteOnTest(MIDI_t* midi) {
-	printf("MIDI_CV_NOTE_ON");
+	printf( "PASS" );
 }
 
 int main( void ) {
 	// Bind the event handler to the MIDI event code
 	MIDI_SetStatusHandler( MIDI_CV_NOTE_ON, NoteOnTest );
 
-	// Simulate a Note On event
-	MIDI_Task(MIDI_CV_NOTE_ON, &midi_in);
-	MIDI_Task(0x40, &midi_in);
-	MIDI_Task(0x40, &midi_in);
+	// Set the container's channel
+	midi_in.channel = 6;
+
+	printf( "MIDI_CV_NOTE_ON " );
+
+	// Simulate a Note On event on channel 6
+	MIDI_Task( MIDI_CV_NOTE_ON | midi_in.channel, &midi_in );
+	MIDI_Task( 0x40, &midi_in );
+	MIDI_Task( 0x40, &midi_in );
+
+	printf("\n");
 
 	return 0;
 }
+
 ----

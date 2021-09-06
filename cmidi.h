@@ -63,7 +63,7 @@ extern "C" {
     } MIDI_StatusType_t;
     
     // Macro's
-    void MIDI_SetStatusHandler(uint8_t status, void (* handler)( MIDI_t* midi ));
+    void MIDI_SetStatusHandler( uint8_t status, void (* handler)( MIDI_t* midi ) );
 
     // ISRs and Tasks
     void MIDI_Task( uint8_t data, MIDI_t* midi );
