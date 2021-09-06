@@ -11,7 +11,7 @@ libcmidi is a MIDI event handling library for C. It is intended to be as compile
 1. Every time you receive a _single_ byte on the MIDI interface, pass it through the `MIDI_Task(...)` function: +
 `MIDI_Task( rxData, &midi );`
 
-When a complete MIDI message is received, `libcmidi` will pick out the right function handler for you, as long as it has been defined and bound to a MIDI message. See the MIDI specification and `midi.h` to see which MIDI events are available.
+When a complete MIDI message is received, `libcmidi` will pick out the right function handler for you, as long as it has been defined and bound to a MIDI message. See the MIDI specification and `cmidi.h` to see which MIDI events are available.
 
 ### Quick usage example
 
