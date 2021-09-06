@@ -1,0 +1,3 @@
+# libcmidi
+libcmidi is a MIDI event handling library for C. It is intended to be as compiler-agnostic as possible.
+
