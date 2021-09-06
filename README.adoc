@@ -16,6 +16,7 @@ When a complete MIDI message is received, `libcmidi` will pick out the right fun
 ### Quick usage example
 
 Below is a quick usage example that
+
 * Creates a MIDI event container called `midi_in`
 * Declares/Defines an event handler called `void NoteOnTest(...)
 * Binds the event handler to a MIDI event code
