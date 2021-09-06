@@ -1,6 +1,10 @@
 # libcmidi
 
-libcmidi is a MIDI event handling library for C. It is intended to be as compiler-agnostic as possible.
+libcmidi is a MIDI event handling library for C. It is intended to
+
+* be as compiler-agnostic as possible
+* adhere to the MIDI 1.1 standard as much as possible
+* small in size and easy to implement
 
 ## Quick usage reference
 
@@ -32,7 +36,7 @@ MIDI_t midi_in = { MIDIState_Status, { 0, 0, 0 } };
 
 // Define/Declare the event handler
 void NoteOnTest(MIDI_t* midi) {
-	printf("MIDI_CV_NOTE_ON PASS");
+	printf("MIDI_CV_NOTE_ON");
 }
 
 int main( void ) {

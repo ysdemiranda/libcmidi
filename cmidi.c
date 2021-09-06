@@ -1,7 +1,5 @@
 #include "cmidi.h"
 
-#include <stdbool.h>
-
 // MIDI Masks
 const uint8_t MIDI_StatusMask =              0b10000000;
 const uint8_t MIDI_DataMask =                0b01111111;
@@ -71,8 +69,8 @@ static uint8_t MIDI_GetMessageLength(uint8_t status) {
     }
 }
 
-static bool MIDI_IsStatus(uint8_t data) {
-    return (bool)(data & MIDI_StatusMask);
+static uint8_t MIDI_IsStatus(uint8_t data) {
+    return (data & MIDI_StatusMask) ? 1 : 0;
 }
 
 static MIDI_StatusType_t MIDI_GetStatusType(uint8_t status) {
