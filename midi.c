@@ -248,76 +248,76 @@ static void MIDI_ISR(MIDI_t* midi) {
     MIDI_ClearObject(midi);
 }
 
-void MIDI_SetStatusHandler(uint8_t status, void (* isr)( MIDI_t* midi )) {
+void MIDI_SetStatusHandler(uint8_t status, void (* handler)( MIDI_t* midi )) {
     switch(status) {
         case MIDI_CV_NOTE_OFF:
-            MIDI_NoteOffISR = isr;
+            MIDI_NoteOffISR = handler;
             break;
         case MIDI_CV_NOTE_ON:
-            MIDI_NoteOnISR = isr;
+            MIDI_NoteOnISR = handler;
             break;
         case MIDI_CV_KEY_PRESSURE:
-            MIDI_KeyPressureISR = isr;
+            MIDI_KeyPressureISR = handler;
             break;
         case MIDI_CV_CONTROL_CHANGE:
-            MIDI_ControlChangeISR = isr;
+            MIDI_ControlChangeISR = handler;
             break;
         case MIDI_CV_PROGRAM_CHANGE:
-            MIDI_ProgramChangeISR = isr;
+            MIDI_ProgramChangeISR = handler;
             break;
         case MIDI_CV_CHANNEL_PRESSURE:
-            MIDI_ChannelPressureISR = isr;
+            MIDI_ChannelPressureISR = handler;
             break;
         case MIDI_CV_PITCH_BEND:
-            MIDI_PitchBendISR = isr;
+            MIDI_PitchBendISR = handler;
             break;
         case MIDI_SC_SYSEX:
-            MIDI_SysExISR = isr;
+            MIDI_SysExISR = handler;
             break;
         case MIDI_SC_TCQF:
-            MIDI_TC_QFrameISR = isr;
+            MIDI_TC_QFrameISR = handler;
             break;
         case MIDI_SC_SONG_POSITION:
-            MIDI_SongPositionISR = isr;
+            MIDI_SongPositionISR = handler;
             break;
         case MIDI_SC_SONG_SELECT:
-            MIDI_SongSelectISR = isr;
+            MIDI_SongSelectISR = handler;
             break;
         case MIDI_SC_UNDEFINED_0:
-            MIDI_Undefined_0ISR = isr;
+            MIDI_Undefined_0ISR = handler;
             break;
         case MIDI_SC_UNDEFINED_1:
-            MIDI_Undefined_1ISR = isr;
+            MIDI_Undefined_1ISR = handler;
             break;
         case MIDI_SC_TUNE_REQUEST:
-            MIDI_TuneRequestISR = isr;
+            MIDI_TuneRequestISR = handler;
             break;
         case MIDI_SC_SYSEX_END:
-            MIDI_EndSysExISR = isr;
+            MIDI_EndSysExISR = handler;
             break;
         case MIDI_RT_TIMING_CLOCK:
-            MIDI_TimingClockISR = isr;
+            MIDI_TimingClockISR = handler;
             break;
         case MIDI_RT_UNDEFINED_2:
-            MIDI_Undefined_2ISR = isr;
+            MIDI_Undefined_2ISR = handler;
             break;
         case MIDI_RT_START:
-            MIDI_StartISR = isr;
+            MIDI_StartISR = handler;
             break;
         case MIDI_RT_CONTINUE:
-            MIDI_ContinueISR = isr;
+            MIDI_ContinueISR = handler;
             break;
         case MIDI_RT_STOP:
-            MIDI_StopISR = isr;
+            MIDI_StopISR = handler;
             break;
         case MIDI_RT_UNDEFINED_3:
-            MIDI_Undefined_3ISR = isr;
+            MIDI_Undefined_3ISR = handler;
             break;
         case MIDI_RT_ACTIVE:
-            MIDI_ActiveISR = isr;
+            MIDI_ActiveISR = handler;
             break;
         case MIDI_RT_RESET:
-            MIDI_ResetISR = isr;
+            MIDI_ResetISR = handler;
             break;
         default:
             break;
@@ -364,7 +364,7 @@ void MIDI_Task( uint8_t data, MIDI_t* midi) {
             }
             break;
         default:
-            // Here be data loss
+            // This is loss
             break;
     }
 

@@ -2,11 +2,11 @@
 #define	MIDI_H
 
 // Channel Voice Messages
-#define MIDI_CV_NOTE_OFF 			0b10000000
+#define MIDI_CV_NOTE_OFF			0b10000000
 #define MIDI_CV_NOTE_ON 			0b10010000
-#define MIDI_CV_KEY_PRESSURE 		0b10100000
-#define MIDI_CV_CONTROL_CHANGE  	0b10110000
-#define MIDI_CV_PROGRAM_CHANGE  	0b11000000
+#define MIDI_CV_KEY_PRESSURE		0b10100000
+#define MIDI_CV_CONTROL_CHANGE		0b10110000
+#define MIDI_CV_PROGRAM_CHANGE		0b11000000
 #define MIDI_CV_CHANNEL_PRESSURE	0b11010000
 #define MIDI_CV_PITCH_BEND			0b11100000
 
@@ -64,7 +64,7 @@ extern "C" {
     } MIDI_StatusType_t;
     
     // Macro's
-    void MIDI_SetStatusHandler(uint8_t status, void (* isr)( MIDI_t* midi ));
+    void MIDI_SetStatusHandler(uint8_t status, void (* handler)( MIDI_t* midi ));
 
     // ISRs and Tasks
     void MIDI_Task( uint8_t data, MIDI_t* midi );
