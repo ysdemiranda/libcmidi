@@ -7,33 +7,33 @@ const uint8_t MIDI_MessageMask =             0b11110000;
 const uint8_t MIDI_CV_ChannelMask =          0b00001111;
 
 // Channel Voice Messages
-static void (*MIDI_NoteOffISR)( MIDI_t* midi );
-static void (*MIDI_NoteOnISR)( MIDI_t* midi );
-static void (*MIDI_KeyPressureISR)( MIDI_t* midi );
-static void (*MIDI_ControlChangeISR)( MIDI_t* midi );
-static void (*MIDI_ProgramChangeISR)( MIDI_t* midi );
-static void (*MIDI_ChannelPressureISR)( MIDI_t* midi );
-static void (*MIDI_PitchBendISR)( MIDI_t* midi );
+static void (*MIDI_NoteOffHandler)( MIDI_t* midi );
+static void (*MIDI_NoteOnHandler)( MIDI_t* midi );
+static void (*MIDI_KeyPressureHandler)( MIDI_t* midi );
+static void (*MIDI_ControlChangeHandler)( MIDI_t* midi );
+static void (*MIDI_ProgramChangeHandler)( MIDI_t* midi );
+static void (*MIDI_ChannelPressureHandler)( MIDI_t* midi );
+static void (*MIDI_PitchBendHandler)( MIDI_t* midi );
 
 // System Common messages
-static void (*MIDI_SysExISR)( MIDI_t* midi );
-static void (*MIDI_TC_QFrameISR)( MIDI_t* midi );
-static void (*MIDI_SongPositionISR)( MIDI_t* midi );
-static void (*MIDI_SongSelectISR)( MIDI_t* midi );
-static void (*MIDI_Undefined_0ISR)( MIDI_t* midi );
-static void (*MIDI_Undefined_1ISR)( MIDI_t* midi );
-static void (*MIDI_TuneRequestISR)( MIDI_t* midi );
-static void (*MIDI_EndSysExISR)( MIDI_t* midi );
+static void (*MIDI_SysExHandler)( MIDI_t* midi );
+static void (*MIDI_TC_QFrameHandler)( MIDI_t* midi );
+static void (*MIDI_SongPositionHandler)( MIDI_t* midi );
+static void (*MIDI_SongSelectHandler)( MIDI_t* midi );
+static void (*MIDI_Undefined_0Handler)( MIDI_t* midi );
+static void (*MIDI_Undefined_1Handler)( MIDI_t* midi );
+static void (*MIDI_TuneRequestHandler)( MIDI_t* midi );
+static void (*MIDI_EndSysExHandler)( MIDI_t* midi );
 
 // System RT Messages
-static void (*MIDI_TimingClockISR)( MIDI_t* midi );
-static void (*MIDI_Undefined_2ISR)( MIDI_t* midi );
-static void (*MIDI_StartISR)( MIDI_t* midi );
-static void (*MIDI_ContinueISR)( MIDI_t* midi );
-static void (*MIDI_StopISR)( MIDI_t* midi );
-static void (*MIDI_Undefined_3ISR)( MIDI_t* midi );
-static void (*MIDI_ActiveISR)( MIDI_t* midi );
-static void (*MIDI_ResetISR)( MIDI_t* midi );
+static void (*MIDI_TimingClockHandler)( MIDI_t* midi );
+static void (*MIDI_Undefined_2Handler)( MIDI_t* midi );
+static void (*MIDI_StartHandler)( MIDI_t* midi );
+static void (*MIDI_ContinueHandler)( MIDI_t* midi );
+static void (*MIDI_StopHandler)( MIDI_t* midi );
+static void (*MIDI_Undefined_3Handler)( MIDI_t* midi );
+static void (*MIDI_ActiveHandler)( MIDI_t* midi );
+static void (*MIDI_ResetHandler)( MIDI_t* midi );
 
 static volatile uint8_t rxBuf = 0;
 static volatile uint8_t expect = 0;
@@ -108,8 +108,8 @@ static void StartMidiMessage() {
     else midiPtr->state = MIDIState_Full;
 }
 
-static void MIDI_ISR(MIDI_t* midi) {
-    //ISR was called too early
+static void MIDI_Handler(MIDI_t* midi) {
+    //Handler was called too early
     if(midi->state != MIDIState_Full)
         return;
     
@@ -127,118 +127,118 @@ static void MIDI_ISR(MIDI_t* midi) {
     
     switch(midi->message.status) {
         case MIDI_CV_NOTE_OFF:
-            if(MIDI_NoteOffISR) {
-                MIDI_NoteOffISR(midi);
+            if(MIDI_NoteOffHandler) {
+                MIDI_NoteOffHandler(midi);
             }
             break;
         case MIDI_CV_NOTE_ON:
-            if(MIDI_NoteOnISR) {
-                MIDI_NoteOnISR(midi);
+            if(MIDI_NoteOnHandler) {
+                MIDI_NoteOnHandler(midi);
             }
             break;
         case MIDI_CV_KEY_PRESSURE:
-            if(MIDI_KeyPressureISR) {
-                MIDI_KeyPressureISR(midi);
+            if(MIDI_KeyPressureHandler) {
+                MIDI_KeyPressureHandler(midi);
             }
             break;
         case MIDI_CV_CONTROL_CHANGE:
-            if(MIDI_ControlChangeISR) {
-                MIDI_ControlChangeISR(midi);
+            if(MIDI_ControlChangeHandler) {
+                MIDI_ControlChangeHandler(midi);
             }
             break;
         case MIDI_CV_PROGRAM_CHANGE:
-            if(MIDI_ProgramChangeISR) {
-                MIDI_ProgramChangeISR(midi);
+            if(MIDI_ProgramChangeHandler) {
+                MIDI_ProgramChangeHandler(midi);
             }
             break;
         case MIDI_CV_CHANNEL_PRESSURE:
-            if(MIDI_ChannelPressureISR) {
-                MIDI_ChannelPressureISR(midi);
+            if(MIDI_ChannelPressureHandler) {
+                MIDI_ChannelPressureHandler(midi);
             }
             break;
         case MIDI_CV_PITCH_BEND:
-            if(MIDI_PitchBendISR) {
-                MIDI_PitchBendISR(midi);
+            if(MIDI_PitchBendHandler) {
+                MIDI_PitchBendHandler(midi);
             }
             break;
         case MIDI_SC_SYSEX:
-            if(MIDI_SysExISR) {
-                MIDI_SysExISR(midi);
+            if(MIDI_SysExHandler) {
+                MIDI_SysExHandler(midi);
             }
             break;
         case MIDI_SC_TCQF:
-            if(MIDI_TC_QFrameISR) {
-                MIDI_TC_QFrameISR(midi);
+            if(MIDI_TC_QFrameHandler) {
+                MIDI_TC_QFrameHandler(midi);
             }
             break;
         case MIDI_SC_SONG_POSITION:
-            if(MIDI_SongPositionISR) {
-                MIDI_SongPositionISR(midi);
+            if(MIDI_SongPositionHandler) {
+                MIDI_SongPositionHandler(midi);
             }
             break;
         case MIDI_SC_SONG_SELECT:
-            if(MIDI_SongSelectISR) {
-                MIDI_SongSelectISR(midi);
+            if(MIDI_SongSelectHandler) {
+                MIDI_SongSelectHandler(midi);
             }
             break;
         case MIDI_SC_UNDEFINED_0:
-            if(MIDI_Undefined_0ISR) {
-                MIDI_Undefined_0ISR(midi);
+            if(MIDI_Undefined_0Handler) {
+                MIDI_Undefined_0Handler(midi);
             }
             break;
         case MIDI_SC_UNDEFINED_1:
-            if(MIDI_Undefined_1ISR) {
-                MIDI_Undefined_1ISR(midi);
+            if(MIDI_Undefined_1Handler) {
+                MIDI_Undefined_1Handler(midi);
             }
             break;
         case MIDI_SC_TUNE_REQUEST:
-            if(MIDI_TuneRequestISR) {
-                MIDI_TuneRequestISR(midi);
+            if(MIDI_TuneRequestHandler) {
+                MIDI_TuneRequestHandler(midi);
             }
             break;
         case MIDI_SC_SYSEX_END:
-            if(MIDI_EndSysExISR) {
-                MIDI_EndSysExISR(midi);
+            if(MIDI_EndSysExHandler) {
+                MIDI_EndSysExHandler(midi);
             }
             break;
         case MIDI_RT_TIMING_CLOCK:
-            if(MIDI_TimingClockISR) {
-                MIDI_TimingClockISR(midi);
+            if(MIDI_TimingClockHandler) {
+                MIDI_TimingClockHandler(midi);
             }
             break;
         case MIDI_RT_UNDEFINED_2:
-            if(MIDI_Undefined_2ISR) {
-                MIDI_Undefined_2ISR(midi);
+            if(MIDI_Undefined_2Handler) {
+                MIDI_Undefined_2Handler(midi);
             }
             break;
         case MIDI_RT_START:
-            if(MIDI_StartISR) {
-                MIDI_StartISR(midi);
+            if(MIDI_StartHandler) {
+                MIDI_StartHandler(midi);
             }
             break;
         case MIDI_RT_CONTINUE:
-            if(MIDI_ContinueISR) {
-                MIDI_ContinueISR(midi);
+            if(MIDI_ContinueHandler) {
+                MIDI_ContinueHandler(midi);
             }
             break;
         case MIDI_RT_STOP:
-            if(MIDI_StopISR) {
-                MIDI_StopISR(midi);
+            if(MIDI_StopHandler) {
+                MIDI_StopHandler(midi);
             }
             break;
         case MIDI_RT_UNDEFINED_3:
-            if(MIDI_Undefined_3ISR) {
-                MIDI_Undefined_3ISR(midi);
+            if(MIDI_Undefined_3Handler) {
+                MIDI_Undefined_3Handler(midi);
             }
             break;
         case MIDI_RT_ACTIVE:
-            if(MIDI_ActiveISR) {
-                MIDI_ActiveISR(midi);
+            if(MIDI_ActiveHandler) {
+                MIDI_ActiveHandler(midi);
             }
             break;
         case MIDI_RT_RESET:
-            if(MIDI_ResetISR) {
-                MIDI_ResetISR(midi);
+            if(MIDI_ResetHandler) {
+                MIDI_ResetHandler(midi);
             }
             break;
         default:
@@ -251,73 +251,73 @@ static void MIDI_ISR(MIDI_t* midi) {
 void MIDI_SetStatusHandler(uint8_t status, void (* handler)( MIDI_t* midi )) {
     switch(status) {
         case MIDI_CV_NOTE_OFF:
-            MIDI_NoteOffISR = handler;
+            MIDI_NoteOffHandler = handler;
             break;
         case MIDI_CV_NOTE_ON:
-            MIDI_NoteOnISR = handler;
+            MIDI_NoteOnHandler = handler;
             break;
         case MIDI_CV_KEY_PRESSURE:
-            MIDI_KeyPressureISR = handler;
+            MIDI_KeyPressureHandler = handler;
             break;
         case MIDI_CV_CONTROL_CHANGE:
-            MIDI_ControlChangeISR = handler;
+            MIDI_ControlChangeHandler = handler;
             break;
         case MIDI_CV_PROGRAM_CHANGE:
-            MIDI_ProgramChangeISR = handler;
+            MIDI_ProgramChangeHandler = handler;
             break;
         case MIDI_CV_CHANNEL_PRESSURE:
-            MIDI_ChannelPressureISR = handler;
+            MIDI_ChannelPressureHandler = handler;
             break;
         case MIDI_CV_PITCH_BEND:
-            MIDI_PitchBendISR = handler;
+            MIDI_PitchBendHandler = handler;
             break;
         case MIDI_SC_SYSEX:
-            MIDI_SysExISR = handler;
+            MIDI_SysExHandler = handler;
             break;
         case MIDI_SC_TCQF:
-            MIDI_TC_QFrameISR = handler;
+            MIDI_TC_QFrameHandler = handler;
             break;
         case MIDI_SC_SONG_POSITION:
-            MIDI_SongPositionISR = handler;
+            MIDI_SongPositionHandler = handler;
             break;
         case MIDI_SC_SONG_SELECT:
-            MIDI_SongSelectISR = handler;
+            MIDI_SongSelectHandler = handler;
             break;
         case MIDI_SC_UNDEFINED_0:
-            MIDI_Undefined_0ISR = handler;
+            MIDI_Undefined_0Handler = handler;
             break;
         case MIDI_SC_UNDEFINED_1:
-            MIDI_Undefined_1ISR = handler;
+            MIDI_Undefined_1Handler = handler;
             break;
         case MIDI_SC_TUNE_REQUEST:
-            MIDI_TuneRequestISR = handler;
+            MIDI_TuneRequestHandler = handler;
             break;
         case MIDI_SC_SYSEX_END:
-            MIDI_EndSysExISR = handler;
+            MIDI_EndSysExHandler = handler;
             break;
         case MIDI_RT_TIMING_CLOCK:
-            MIDI_TimingClockISR = handler;
+            MIDI_TimingClockHandler = handler;
             break;
         case MIDI_RT_UNDEFINED_2:
-            MIDI_Undefined_2ISR = handler;
+            MIDI_Undefined_2Handler = handler;
             break;
         case MIDI_RT_START:
-            MIDI_StartISR = handler;
+            MIDI_StartHandler = handler;
             break;
         case MIDI_RT_CONTINUE:
-            MIDI_ContinueISR = handler;
+            MIDI_ContinueHandler = handler;
             break;
         case MIDI_RT_STOP:
-            MIDI_StopISR = handler;
+            MIDI_StopHandler = handler;
             break;
         case MIDI_RT_UNDEFINED_3:
-            MIDI_Undefined_3ISR = handler;
+            MIDI_Undefined_3Handler = handler;
             break;
         case MIDI_RT_ACTIVE:
-            MIDI_ActiveISR = handler;
+            MIDI_ActiveHandler = handler;
             break;
         case MIDI_RT_RESET:
-            MIDI_ResetISR = handler;
+            MIDI_ResetHandler = handler;
             break;
         default:
             break;
@@ -369,6 +369,6 @@ void MIDI_Task( uint8_t data, MIDI_t* midi) {
     }
 
     if(midi->state == MIDIState_Full) {
-        MIDI_ISR(midi);
+        MIDI_Handler(midi);
     }
 }
