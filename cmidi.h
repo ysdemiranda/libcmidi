@@ -1,6 +1,9 @@
 #ifndef MIDI_H
 #define	MIDI_H
 
+/*
+ * MIDI Event number definitions
+ */
 // Channel Voice Messages
 #define MIDI_CV_NOTE_OFF			0b10000000
 #define MIDI_CV_NOTE_ON 			0b10010000
@@ -9,7 +12,6 @@
 #define MIDI_CV_PROGRAM_CHANGE		0b11000000
 #define MIDI_CV_CHANNEL_PRESSURE	0b11010000
 #define MIDI_CV_PITCH_BEND			0b11100000
-
 // System Common Messages
 #define MIDI_SC_SYSEX				0b11110000
 #define MIDI_SC_TCQF				0b11110001
@@ -19,7 +21,6 @@
 #define MIDI_SC_UNDEFINED_1			0b11110101
 #define MIDI_SC_TUNE_REQUEST		0b11110110
 #define MIDI_SC_SYSEX_END			0b11110111
-
 // System Real-time Messages
 #define MIDI_RT_TIMING_CLOCK		0b11111000
 #define MIDI_RT_UNDEFINED_2			0b11111001
@@ -35,13 +36,19 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
+
+    /*
+     * Abstraction of a three-byte MIDI message
+     */
     typedef struct {
         uint8_t status;
         uint8_t data0;
         uint8_t data1;
     } MIDI_Message_t;
     
+    /*
+     * Abstraction of a message pointer
+     */
     typedef enum {
         MIDIState_Status,
         MIDIState_Data0,
@@ -49,23 +56,33 @@ extern "C" {
         MIDIState_Full
     } MIDI_State_t;
     
+    /*
+     * Abstraction of a MIDI state
+     */
     typedef struct {
         MIDI_State_t state;
         MIDI_Message_t message;
         uint8_t channel;
     } MIDI_t;
 
+    /*
+     * Abstraction of a MIDI status type
+     */
     typedef enum {
-        MIDIStatus_NoStatus,
-        MIDIStatus_ChannelVoice,
-        MIDIStatus_SystemCommon,
-        MIDIStatus_SystemRealTime
+        MIDIStatusType_NoStatus,
+        MIDIStatusType_ChannelVoice,
+        MIDIStatusType_SystemCommon,
+        MIDIStatusType_SystemRealTime
     } MIDI_StatusType_t;
     
-    // Macro's
+    /*
+     * Binds a MIDI status to a function of type void f(MIDI_t* midi)
+     */
     void MIDI_SetStatusHandler( uint8_t status, void (* handler)( MIDI_t* midi ) );
 
-    // ISRs and Tasks
+    /*
+     * Handles incoming bytes
+     */
     void MIDI_Task( uint8_t data, MIDI_t* midi );
     
 #ifdef	__cplusplus

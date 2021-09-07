@@ -6,11 +6,11 @@ libcmidi is a MIDI event handling library for C. It is intended to
 * adhere to the entire MIDI 1.0 standard as much as possible
 * be small in size and easy to use
 
-### Quick usage example
+## Quick usage example
 
 Below is a quick usage example that
 
-* Creates a MIDI event container called `midi_in`
+* Creates a MIDI state container called `midi_in`
 * Declares/Defines an event handler called `void NoteOnTest(...)`
 * Binds the event handler to a MIDI event code
 * Sets the container's channel to 6
@@ -21,7 +21,7 @@ Below is a quick usage example that
 #include <stdio.h>
 #include "cmidi.h"
 
-// Create the container
+// Create the state container
 MIDI_t midi_in;
 
 // Define/Declare the event handler
@@ -49,3 +49,9 @@ int main( void ) {
 }
 
 ----
+
+## Works in progress
+
+* Add full MIDI 1.0 (rev. '96) compliant support for SysEx messages
+* Harden the continuated message mechanism
+* Include examples for a multitude of target platforms

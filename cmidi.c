@@ -78,22 +78,22 @@ static MIDI_StatusType_t MIDI_GetStatusType(uint8_t status) {
         status &= MIDI_MessageMask;
     
     if(status < MIDI_CV_NOTE_OFF) {
-        return MIDIStatus_NoStatus;
+        return MIDIStatusType_NoStatus;
     }
     else if(status < MIDI_SC_SYSEX) {
-        return MIDIStatus_ChannelVoice;
+        return MIDIStatusType_ChannelVoice;
     }
     else if(status < MIDI_RT_TIMING_CLOCK) {
-        return MIDIStatus_SystemCommon;
+        return MIDIStatusType_SystemCommon;
     }
     else {
-        return MIDIStatus_SystemRealTime;
+        return MIDIStatusType_SystemRealTime;
     }
 }
 
 static void MIDI_ClearObject(MIDI_t* midi) {
     // Do not clear the Status byte as it
-    // might be required for a continued event.
+    // might be required for a continuated event.
     midi->message.data0 = 0;
     midi->message.data1 = 0;
     midi->state = MIDIState_Status;
@@ -113,7 +113,7 @@ static void MIDI_ISR(MIDI_t* midi) {
     if(midi->state != MIDIState_Full)
         return;
     
-    if(MIDI_GetStatusType(midi->message.status) == MIDIStatus_ChannelVoice) {
+    if(MIDI_GetStatusType(midi->message.status) == MIDIStatusType_ChannelVoice) {
         if((midi->message.status & MIDI_CV_ChannelMask) != midi->channel) {
             // This message is not for me
             MIDI_ClearObject(midi);
